@@ -107,18 +107,33 @@ button.main {
     <button class="main" onclick="logout()">🚪 Выйти</button>
 </div>
 
-<script>
-const userName = localStorage.getItem("userName");
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// =======================
+// 🔑 Вставь сюда свой Firebase конфиг
+// =======================
+const firebaseConfig = {
+  apiKey: "AIzaSyD25dA37Mma0p4xgh3nPxiRRwBALirZgAI",
+  authDomain: "englishapp-f7c94.firebaseapp.com",
+  projectId: "englishapp-f7c94",
+  storageBucket: "englishapp-f7c94.firebasestorage.app",
+  messagingSenderId: "663428608138",
+  appId: "1:663428608138:веб:326d35103a2f2a8d697d73"
+};
+// =======================
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// =======================
+// Получаем роль и класс
+// =======================
 const userRole = localStorage.getItem("userRole");
 const studentClass = localStorage.getItem("studentClass");
-
-if(!userName){
-    window.location.href = "index.html";
-}
-
-document.getElementById("welcomeText").innerText =
-    "Здравствуйте, " + userName +
-    (userRole === "teacher" ? " (Учитель)" : " (Ученик)");
 
 const homeworkList = document.getElementById("homeworkList");
 const addBtn = document.getElementById("addHomeworkBtn");
@@ -127,24 +142,35 @@ if(userRole !== "teacher"){
     addBtn.style.display = "none";
 }
 
-function loadHomework(){
+document.getElementById("welcomeText").innerText =
+    "Здравствуйте, " + localStorage.getItem("userName") +
+    (userRole === "teacher" ? " (Учитель)" : " (Ученик)");
+
+// =======================
+// Загрузка домашки
+// =======================
+async function loadHomework(){
     homeworkList.innerHTML = "";
-    const homework = JSON.parse(localStorage.getItem("homework")) || [];
+    const querySnapshot = await getDocs(collection(db, "homework"));
 
-    homework.forEach((taskObj, index) => {
+    querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
 
-        // 👇 Если ученик — показываем только его класс
-        if(userRole === "student" && taskObj.class !== studentClass){
+        // 👀 ученик видит только свой класс
+        if(userRole === "student" && data.class !== studentClass){
             return;
         }
 
         const li = document.createElement("li");
-        li.textContent = taskObj.text + " (" + taskObj.class + ")";
+        li.textContent = data.text + " (" + data.class + ")";
 
         if(userRole === "teacher"){
             const delBtn = document.createElement("button");
             delBtn.textContent = "❌";
-            delBtn.onclick = () => deleteHomework(index);
+            delBtn.onclick = async () => {
+                await deleteDoc(doc(db, "homework", docSnap.id));
+                loadHomework();
+            };
             li.appendChild(delBtn);
         }
 
@@ -152,33 +178,37 @@ function loadHomework(){
     });
 }
 
-function addHomework(){
+// =======================
+// Добавление домашки
+// =======================
+window.addHomework = async function(){
     const text = prompt("Введите задание:");
     if(!text) return;
 
-    const classChoice = prompt("Введите класс (например 5А, 5Б, 6А):");
+    const classChoice = prompt("Введите класс (например 5А):");
     if(!classChoice) return;
 
-    const homework = JSON.parse(localStorage.getItem("homework")) || [];
-    homework.push({ text: text, class: classChoice });
-    localStorage.setItem("homework", JSON.stringify(homework));
+    await addDoc(collection(db, "homework"), {
+        text: text,
+        class: classChoice
+    });
 
     loadHomework();
 }
 
-function deleteHomework(index){
-    const homework = JSON.parse(localStorage.getItem("homework")) || [];
-    homework.splice(index, 1);
-    localStorage.setItem("homework", JSON.stringify(homework));
-    loadHomework();
-}
-
+// =======================
+// Выход
+// =======================
 function logout(){
     localStorage.clear();
     window.location.href = "index.html";
 }
 
+// =======================
+// Начальная загрузка
+// =======================
 loadHomework();
+
 </script>
 
 </body>
