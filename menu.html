@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Главное меню</title>
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    color: white;
+    background: linear-gradient(-45deg, #1cc88a, #4e73df, #36b9cc);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position:0% 50%; }
+    50% { background-position:100% 50%; }
+    100% { background-position:0% 50%; }
+}
+
+.homework {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 320px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px;
+}
+
+.homework h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.homework ul {
+    list-style: none;
+    padding: 0;
+}
+
+.homework li {
+    padding: 6px;
+    margin-bottom: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.homework button {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.addBtn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.container {
+    text-align: center;
+    padding: 30px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    width: 400px;
+    margin: 150px auto;
+}
+
+button.main {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,0.3);
+    color: white;
+    font-size: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="homework">
+    <h2>📎 Домашнее задание</h2>
+    <ul id="homeworkList"></ul>
+    <button id="addHomeworkBtn" class="addBtn" onclick="addHomework()">➕ Добавить</button>
+</div>
+
+<div class="container">
+    <h1 id="welcomeText"></h1>
+    <button class="main">📖 Начать урок</button>
+    <button class="main">📝 Пройти тест</button>
+    <button class="main">🏆 Мои достижения</button>
+    <button class="main" onclick="logout()">🚪 Выйти</button>
+</div>
+
+<script>
+const userName = localStorage.getItem("userName");
+const userRole = localStorage.getItem("userRole");
+const studentClass = localStorage.getItem("studentClass");
+
+if(!userName){
+    window.location.href = "index.html";
+}
+
+document.getElementById("welcomeText").innerText =
+    "Здравствуйте, " + userName +
+    (userRole === "teacher" ? " (Учитель)" : " (Ученик)");
+
+const homeworkList = document.getElementById("homeworkList");
+const addBtn = document.getElementById("addHomeworkBtn");
+
+if(userRole !== "teacher"){
+    addBtn.style.display = "none";
+}
+
+function loadHomework(){
+    homeworkList.innerHTML = "";
+    const homework = JSON.parse(localStorage.getItem("homework")) || [];
+
+    homework.forEach((taskObj, index) => {
+
+        // 👇 Если ученик — показываем только его класс
+        if(userRole === "student" && taskObj.class !== studentClass){
+            return;
+        }
+
+        const li = document.createElement("li");
+        li.textContent = taskObj.text + " (" + taskObj.class + ")";
+
+        if(userRole === "teacher"){
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "❌";
+            delBtn.onclick = () => deleteHomework(index);
+            li.appendChild(delBtn);
+        }
+
+        homeworkList.appendChild(li);
+    });
+}
+
+function addHomework(){
+    const text = prompt("Введите задание:");
+    if(!text) return;
+
+    const classChoice = prompt("Введите класс (например 5А, 5Б, 6А):");
+    if(!classChoice) return;
+
+    const homework = JSON.parse(localStorage.getItem("homework")) || [];
+    homework.push({ text: text, class: classChoice });
+    localStorage.setItem("homework", JSON.stringify(homework));
+
+    loadHomework();
+}
+
+function deleteHomework(index){
+    const homework = JSON.parse(localStorage.getItem("homework")) || [];
+    homework.splice(index, 1);
+    localStorage.setItem("homework", JSON.stringify(homework));
+    loadHomework();
+}
+
+function logout(){
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+
+loadHomework();
+</script>
+
+</body>
+</html>

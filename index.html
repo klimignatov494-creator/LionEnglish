@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Learning App</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    height:100vh;
+    width:100vw;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(-45deg,#667eea,#764ba2,#6dd5ed,#2193b0);
+    background-size: 400% 400%;
+    animation: gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* Контейнер приложения */
+.app{
+    width:95%;
+    max-width:420px;
+    min-height:700px;
+    border-radius:30px;
+    overflow:hidden;
+    box-shadow:0 15px 50px rgba(0,0,0,0.4);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:center;
+    padding-top:20px;
+    background: rgba(255,255,255,0.1); /* легкая прозрачность */
+    backdrop-filter: blur(15px);
+}
+
+/* Карточка регистрации */
+.card{
+    width:95%;
+    min-height:600px;
+    margin:10px auto;
+    padding:30px;
+    border-radius:25px;
+    background: rgba(255,255,255,0.15); /* стекло */
+    backdrop-filter: blur(10px);
+    color:white;
+    display:flex;
+    flex-direction:column;
+}
+
+.card h1{
+    text-align:center;
+    margin-bottom:25px;
+    font-weight:700;
+    font-size:22px;
+}
+
+.input-group{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:18px;
+}
+
+.input-group label{
+    font-size:14px;
+    margin-bottom:6px;
+}
+
+input, select{
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    font-size:15px;
+    outline:none;
+}
+
+input:focus, select:focus{
+    box-shadow:0 0 10px rgba(255,255,255,0.8);
+}
+
+button{
+    margin-top:15px;
+    padding:14px;
+    border-radius:22px;
+    font-size:16px;
+    font-weight:600;
+    border:none;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.primary{
+    background:white;
+    color:#333;
+}
+
+.primary:active{
+    transform:scale(0.97);
+}
+
+.secondary{
+    background:rgba(255,255,255,0.3);
+    color:white;
+}
+
+.secondary:active{
+    transform:scale(0.97);
+}
+
+.back{
+    margin-top:12px;
+    background:none;
+    color:white;
+}
+
+.hidden{
+    display:none;
+}
+
+@media screen and (max-width:400px){
+    .app{
+        min-height:650px;
+    }
+    .card{
+        min-height:550px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- Ученик -->
+    <div id="studentScreen" class="card">
+        <h1>Регистрация ученика</h1>
+        <div class="input-group">
+            <label>Имя</label>
+            <input type="text" id="studentName">
+        </div>
+        <div class="input-group">
+            <label>Фамилия</label>
+            <input type="text" id="studentSurname">
+        </div>
+        <div class="input-group">
+            <label>Класс</label>
+            <select id="studentClass">
+                <option value="">Выберите класс</option>
+                <option>5А</option><option>5Б</option>
+                <option>6А</option><option>6Б</option>
+                <option>7А</option><option>7Б</option>
+                <option>8А</option><option>8Б</option>
+                <option>9А</option><option>9Б</option>
+                <option>10А</option><option>10Б</option>
+                <option>11А</option><option>11Б</option>
+            </select>
+        </div>
+
+        <button class="primary" onclick="loginStudent()">Далее</button>
+        <button class="secondary" onclick="showTeacher()">Войти учителю</button>
+    </div>
+
+    <!-- Учитель -->
+    <div id="teacherScreen" class="card hidden">
+        <h1>Вход учителя</h1>
+        <div class="input-group">
+            <label>Фамилия</label>
+            <input type="text" id="teacherSurname">
+        </div>
+        <div class="input-group">
+            <label>Имя</label>
+            <input type="text" id="teacherName">
+        </div>
+        <div class="input-group">
+            <label>Отчество</label>
+            <input type="text" id="teacherPatronymic">
+        </div>
+        <div class="input-group">
+            <label>Код</label>
+            <input type="password" id="teacherCode">
+        </div>
+
+        <button class="primary" onclick="loginTeacher()">Войти</button>
+        <button class="back" onclick="backToStudent()">← Назад</button>
+    </div>
+
+</div>
+
+<script>
+function showTeacher(){
+    document.getElementById("studentScreen").classList.add("hidden");
+    document.getElementById("teacherScreen").classList.remove("hidden");
+}
+
+function backToStudent(){
+    document.getElementById("teacherScreen").classList.add("hidden");
+    document.getElementById("studentScreen").classList.remove("hidden");
+}
+
+function loginStudent(){
+    const name = document.getElementById("studentName").value;
+    const surname = document.getElementById("studentSurname").value;
+    const studentClass = document.getElementById("studentClass").value;
+
+    if(name && surname && studentClass){
+        localStorage.setItem("userName", name + " " + surname);
+        localStorage.setItem("userRole", "student");
+        localStorage.setItem("studentClass", studentClass);
+        window.location.href="menu.html";
+    }else{
+        alert("Заполните все поля!");
+    }
+}
+
+function loginTeacher(){
+    const surname = document.getElementById("teacherSurname").value;
+    const name = document.getElementById("teacherName").value;
+    const patronymic = document.getElementById("teacherPatronymic").value;
+    const code = document.getElementById("teacherCode").value;
+
+    if(surname && name && patronymic && code==="987"){
+        localStorage.setItem("userName", surname + " " + name + " " + patronymic);
+        localStorage.setItem("userRole", "teacher");
+        window.location.href="menu.html";
+    }else{
+        alert("Неверные данные или код!");
+    }
+}
+</script>
+
+</body>
+</html>
